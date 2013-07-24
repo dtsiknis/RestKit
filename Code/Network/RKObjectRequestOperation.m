@@ -395,6 +395,12 @@ static NSString *RKStringDescribingURLResponseWithData(NSURLResponse *response, 
             [[NSNotificationCenter defaultCenter] postNotificationName:RKObjectRequestOperationDidFinishNotification object:weakSelf userInfo:@{ RKObjectRequestOperationMappingDidStartUserInfoKey: weakSelf.mappingDidStartDate ?: [NSNull null], RKObjectRequestOperationMappingDidFinishUserInfoKey: weakSelf.mappingDidFinishDate ?: [NSNull null] }];
         }];
         [self.stateMachine setCancellationBlock:^{
+            
+            // Note : This was added because in some cases of cancelled operations, the
+            //        operation state machine does not proceed to the finalization block
+            //        and leaves undecremented counts on the network activity indicator 
+            RKDecrementNetworkAcitivityIndicator();
+            
             [weakSelf.HTTPRequestOperation cancel];
             [weakSelf.responseMapperOperation cancel];
         }];
